@@ -241,7 +241,8 @@ public class SoftApManager implements ActiveModeManager {
                 return ERROR_GENERIC;
             }
             // Absence of country code is not fatal for 2Ghz & Any band options.
-        } else if (!mWifiNative.setCountryCodeHal(
+        // "00" is the world domain: there is no specific country to program into the HAL.
+        } else if (!"00".equals(mCountryCode) && !mWifiNative.setCountryCodeHal(
                 mApInterfaceName, mCountryCode.toUpperCase(Locale.ROOT))) {
             if (config.apBand == WifiConfiguration.AP_BAND_5GHZ) {
                 // Return an error if failed to set country code when AP is configured for
