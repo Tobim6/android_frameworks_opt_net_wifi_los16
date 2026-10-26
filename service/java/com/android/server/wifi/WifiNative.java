@@ -909,6 +909,15 @@ public class WifiNative {
      */
     public String setupInterfaceForSoftApMode(@NonNull InterfaceCallback interfaceCallback) {
         synchronized (mLock) {
+            // AGS2: the vendor wifi HAL is an Android 8.0 one, which cannot change the chip mode (STA -> AP)
+            // in place (configureChip returns NOT_SUPPORTED while the chip is configured). Tear down the
+            // client interfaces first so that the HAL is stopped and restarted before the AP interface
+            // is created.
+            for (String staName = mIfaceMgr.findAnyStaIfaceName(); staName != null;
+                    staName = mIfaceMgr.findAnyStaIfaceName()) {
+                Log.i(TAG, "Tearing down client iface " + staName + " before starting the soft AP");
+                teardownInterface(staName);
+            }
             if (!startHal()) {
                 Log.e(TAG, "Failed to start Hal");
                 mWifiMetrics.incrementNumSetupSoftApInterfaceFailureDueToHal();
